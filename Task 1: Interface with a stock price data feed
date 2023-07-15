@@ -1,50 +1,93 @@
-class Car:
+import urllib.request
+import time
+import json
+import random
+ 
+# Server API URLs
+QUERY = "http://localhost:8080/query?id={}"
+ 
+# 500 server request
+N = 500
+ 
+def getDataPoint(quote):
+    """ Produce all of the needed values to generate a datapoint """
+    """ ------------- Update this function ------------- """
+    stock = quote['stock']
+    bid_price = float(quote['top_bid']['price'])
+    ask_price = float(quote['top_ask']['price'])
+    price = (bid_price+ask_price)/2
+    return stock, bid_price, ask_price, price
+ 
+def getRatio(price_a, price_b):
+    """ Get ratio of price_a and price_b """
+    """ ------------- Update this function ------------- """
+    if (price_b == 0 ):
+        return
+    """ Also create some unit tests for this function in client_test.py """
+    return price_a/price_b
+ 
+# Main
+if __name__ == "__main__":
+ 
+    # Query the price once every N seconds.
+    for _ in range(N):
+        quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
+ 
+        """ ----------- Update to get the ratio --------------- """
+        prices={}
+        for quote in quotes:
+            stock, bid_price, ask_price, price = getDataPoint(quote)
+            prices[stock]=price
+            print ("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
+ 
+        print ("Ratio %s" % (getRatio(prices['ABC'],prices['DEF'])))
+        
+################################################################################        
+        
+ Bonus Task: 
+ 
+step 1: open client_test.py 
+step 2: Select all and backspace and paste the full below code 
 
-    def __init__(self, speed=0):
-        self.speed = speed
-        self.odometer = 0
-        self.time = 0
+Code Changes in unit Test:
 
-    def say_state(self):
-        print("I'm going {} kph!".format(self.speed))
-
-    def accelerate(self):
-        self.speed += 5
-
-    def brake(self):
-        if self.speed < 5:
-            self.speed = 0
-        else:
-            self.speed -= 5
-
-    def step(self):
-        self.odometer += self.speed
-        self.time += 1
-
-    def average_speed(self):
-        if self.time != 0:
-            return self.odometer / self.time
-        else:
-            pass
-
-
+import unittest
+from client3 import getDataPoint
+ 
+class ClientTest(unittest.TestCase):
+  def test_getDataPoint_calculatePrice(self):
+    quotes = [
+      {'top_ask': {'price': 121.2, 'size': 36}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 120.48, 'size': 109}, 'id': '0.109974697771', 'stock': 'ABC'},
+      {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
+    ]
+    """ ------------ Add the assertion below ------------ """
+    for quote in quotes:
+      self =.assertEqual(getDataPoint(quote), (quote['stock'],quote['top_bid']['price'],quote['top_ask']['price'],(quote['top_bid']['price']+quote['top_ask']['price'])/2))
+ 
+  def test_getDataPoint_calculatePriceBidGreaterThanAsk(self):
+    quotes = [
+      {'top_ask': {'price': 119.2, 'size': 36}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 120.48, 'size': 109}, 'id': '0.109974697771', 'stock': 'ABC'},
+      {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
+    ]
+    """ ------------ Add the assertion below ------------ """
+    for quote in quotes:
+      self =.assertEqual(getDataPoint(quote), (quote['stock'],quote['top_bid']['price'],quote['top_ask']['price'],(quote['top_bid']['price']+quote['top_ask']['price'])/2))
+ 
+ 
+  """ ------------ Add more unit tests ------------ """
+ 
+ 
+ 
 if __name__ == '__main__':
+    unittest.main()
+    
+-------------------------------------------------------------------------------------------------------------    
+Create A Patch file :
+Step 1: Open cmd and change dir by cd <path where you downloaded the git files:
+step 2: write the below code
 
-    my_car = Car()
-    print("I'm a car!")
-    while True:
-        action = input("What should I do? [A]ccelerate, [B]rake, "
-                 "show [O]dometer, or show average [S]peed?").upper()
-        if action not in "ABOS" or len(action) != 1:
-            print("I don't know how to do that")
-            continue
-        if action == 'A':
-            my_car.accelerate()
-        elif action == 'B':
-            my_car.brake()
-        elif action == 'O':
-            print("The car has driven {} kilometers".format(my_car.odometer))
-        elif action == 'S':
-            print("The car's average speed was {} kph".format(my_car.average_speed()))
-        my_car.step()
-        my_car.say_state()
+git add -A
+git config user.email "<your_email_address>"
+git config user.name "<your_name>"
+git commit -m "Create Patch File"
+git format-patch -1 HEAD
